@@ -35,14 +35,47 @@
         border-radius: 4px;
         background: $dialog-ux-modal-background-color;
         box-shadow: 0 10px 30px 0 rgba($dialog-ux-modal-box-shadow-color,.20);
+
+        // The modal is centred at top:50% and sized from its content, so on a viewport
+        // shorter than the dialog it is clipped off BOTH ends and .dialog-ux's
+        // position:fixed puts it out of the page scrollbar's reach. Capping it to the
+        // viewport and laying it out as a flex column lets .modal-ux-content shrink
+        // below its 540px cap so its existing overflow-y:auto takes over.
+        display: flex;
+
+        max-height: calc(100vh - 20px);
+
+        // Bare wrappers in the markup (.modal-ux > .modal-dialog-ux > .modal-ux-inner
+        // > header + content) — the column has to be threaded through both of them or
+        // the content region never becomes the flex item that shrinks.
+        .modal-dialog-ux,
+        .modal-ux-inner
+        {
+            display: flex;
+
+            flex: 1 1 auto;
+            flex-direction: column;
+
+            // min-* 0 lets these shrink below their content size; without it a flex
+            // item refuses to shrink past min-content and the modal overflows again.
+            min-width: 0;
+            min-height: 0;
+        }
     }
 
     .modal-ux-content
     {
         overflow-y: auto;
 
+        // The 540px cap stays: on a tall enough viewport it still wins, so those
+        // render exactly as they did before. flex/min-height let the cap be
+        // undercut when the viewport is the tighter constraint.
         max-height: 540px;
         padding: 20px;
+
+        flex: 1 1 auto;
+
+        min-height: 0;
 
         p
         {
@@ -73,6 +106,10 @@
         padding: 12px 0;
 
         border-bottom: 1px solid $dialog-ux-modal-header-border-bottom-color;
+
+        // Fixed-size item of the column above, so the header keeps its height and
+        // only .modal-ux-content absorbs the shrink.
+        flex: 0 0 auto;
 
         align-items: center;
 
